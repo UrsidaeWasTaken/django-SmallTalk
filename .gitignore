@@ -52,7 +52,11 @@ coverage.xml
 *.pot
 
 # Django stuff:
+*.pot
+*.pyc
 *.log
+__pycache__/
+media
 local_settings.py
 db.sqlite3
 
