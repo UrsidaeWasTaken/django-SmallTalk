@@ -1,0 +1,11 @@
+<head>
+    <meta charset="UTF-8">
+    <title>SmallTalk</title>
+</head>
+<body>
+    <div id="chat-log">
+        {% for msg in messages %}
+        {{ msg.time }} <b>{{ msg.user }}</b> | {{ msg.message }}<br>
+        {% endfor %}
+    </div>
+</body>
