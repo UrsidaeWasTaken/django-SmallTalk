@@ -1,11 +1,21 @@
-<head>
-    <meta charset="UTF-8">
-    <title>SmallTalk</title>
-</head>
-<body>
-    <div id="chat-log">
-        {% for msg in messages %}
-        {{ msg.time }} <b>{{ msg.user }}</b> | {{ msg.message }}<br>
-        {% endfor %}
-    </div>
-</body>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>SmallTalk</title>
+    </head>
+    <body>
+        <div id="chat-log">
+            {% for msg in messages %}
+                {{ msg.time|date:"D, d/m/Y" }} <b>{{ msg.user }}</b> | {{ msg.message }}<br>
+            {% endfor %}
+        </div>
+
+        <div id="chat-input-area">
+            <form action="" method="post" enctype="multipart/form-data" id="send-form">
+                {% csrf_token %}
+                {{ message_input.as_p }}
+                <input type="submit" id="send-button" value="Send" />
+            </form>
+        </div>
+    </body>
+</html>

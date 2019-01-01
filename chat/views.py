@@ -1,8 +1,8 @@
-import json
-from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http import HttpResponse
 from django.db import IntegrityError
 from django.shortcuts import render
 from .models import ChatRoom as ChatRoomModel, ChatMessage as ChatMessageModel
+from .forms import MessageForm
 
 
 # Create your views here.
@@ -11,6 +11,24 @@ def room(request, room_id=None):
         user = request.user
         if not room_id:
             return HttpResponse('Failed')
+
+        if request.method == 'POST':
+            try:
+                chatroom = ChatRoomModel.object.get(id=room_id)
+            except ChatRoomModel.DoesNotExist:
+                try:
+                    chatroom = ChatRoomModel(id=room_id)
+                    chatroom.save()
+                except IntegrityError:
+                    chatroom = ChatRoomModel.object.get(id=room_id)
+
+            form = MessageForm(request.POST)
+            if form.is_valid():
+                msg = ChatMessageModel(room=chatroom, user=user)
+                msg.text = form.cleaned_data['text']
+                msg.save()
+            else:
+                return HttpResponse('Failed')
 
         msgs = []
         try:
@@ -22,6 +40,7 @@ def room(request, room_id=None):
             return HttpResponse('Failed')
 
         context = {}
+        context['message_input'] = MessageForm
         context['room_id'] = room_id
         context['messages'] = msgs
         context['user'] = user
@@ -30,24 +49,3 @@ def room(request, room_id=None):
         context = {}
         context['room_id'] = room_id or 'default'
         return HttpResponse('Failed')
-
-
-def messages(request, room_id):
-    if request.method == 'POST':
-        try:
-            chatroom = ChatRoomModel.object.get(id=room_id)
-        except ChatRoomModel.DoesNotExist:
-            try:
-                chatroom = ChatRoomModel(id=room_id)
-                chatroom.save()
-            except IntegrityError:
-                chatroom = ChatRoomModel.object.get(id=room_id)
-
-        user = request.POST['user']
-        text = request.POST['text']
-        msg = ChatMessageModel(room=chatroom, user=user, message=text)
-        msg.save()
-        body = json.dumps(msg.to_dict())
-        return HttpResponse(body, content_type='application/json')
-    else:
-        return HttpResponseNotAllowed(['POST'])
